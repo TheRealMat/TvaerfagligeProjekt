@@ -1,0 +1,38 @@
+﻿@page "/"
+@inject HttpClient Http
+
+
+<PageTitle>Your Locks</PageTitle>
+
+    <p>Your locks.</p>
+
+    @if (locks == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @foreach (var l in locks)
+        {
+            <row>
+                <p>@l.LockId</p>
+                <button @onclick="@(() => ToggleLock(l.LockId))">Toggle</button>
+            </row>
+        }
+    }
+
+@code {
+    private List<Lock>? locks = new List<Lock>();
+    HttpClient client = new HttpClient();
+    User user = new User("John", "Test", "192.168.10.155:7089");
+
+    protected override async Task OnInitializedAsync()
+    {
+        locks = await client.GetFromJsonAsync<List<Lock>>($"https://{user.apiIp}/Api?userName={user.name}&userPass={user.pass}");
+    }
+
+    private async void ToggleLock(string? lockId)
+    {
+        await client.PostAsync($"https://{user.apiIp}/Api?userName={user.name}&userPass={user.pass}&lockId={lockId}", null);
+    }
+}
